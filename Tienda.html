@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda NFC — Tecnologías Onix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --ink: #0d0d0d;
+  --ink-2: #3a3a3a;
+  --ink-3: #888;
+  --paper: #fafaf7;
+  --paper-2: #f2f0ea;
+  --blue: #1557f0;
+  --blue-2: #0d3fbe;
+  --blue-pale: #eef2ff;
+  --line: rgba(13,13,13,0.1);
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans: 'Geist', system-ui, sans-serif;
+  --r: 14px;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  height: 64px;
+  background: rgba(250,250,247,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.logo {
+  display: flex; align-items: baseline; gap: 2px; text-decoration: none;
+}
+.logo-tec { font-family: var(--sans); font-weight: 300; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); }
+.logo-onix { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--ink); letter-spacing: -0.01em; }
+
+.nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
+.nav-links a { font-size: 13px; font-weight: 400; color: var(--ink-2); text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s; }
+.nav-links a:hover { color: var(--blue); }
+
+.nav-right { display: flex; align-items: center; gap: 16px; }
+
+.cart-btn {
+  position: relative;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.cart-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-pale); }
+#cartCount {
+  position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px; font-weight: 600;
+  display: none;
+  align-items: center; justify-content: center;
+}
+#cartCount.show { display: flex; }
+
+.nav-btn {
+  padding: 9px 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  color: #fff;
+  background: var(--ink);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  letter-spacing: 0.04em;
+}
+.nav-btn:hover { background: var(--blue); border-color: var(--blue); }
+
+.menu-toggle {
+  display: none; background: none; border: none;
+  color: var(--ink); font-size: 20px; padding: 6px; cursor: pointer;
+}
+
+/* ── OVERLAY + SIDEBAR ───────────────────────── */
+.nav-overlay {
+  display: none; position: fixed; inset: 0; z-index: 199;
+  background: rgba(13,13,13,0.45); backdrop-filter: blur(3px);
+  opacity: 0; transition: opacity 0.3s;
+}
+.nav-overlay.open { display: block; opacity: 1; }
+
+.mobile-nav {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+  width: 78%; max-width: 320px;
+  background: var(--paper);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: -8px 0 40px rgba(13,13,13,0.12);
+}
+.mobile-nav.open { transform: translateX(0); }
+
+.mobile-nav-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 64px;
+  border-bottom: 1px solid var(--line); flex-shrink: 0;
+}
+.mobile-nav-logo { display: flex; align-items: baseline; gap: 2px; text-decoration: none; }
+.mobile-nav-logo .tec { font-size: 10px; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3); }
+.mobile-nav-logo .onix { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); }
+.mobile-nav-close {
+  background: none; border: 1px solid var(--line); border-radius: 8px;
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: var(--ink-2); cursor: pointer;
+  transition: background 0.2s;
+}
+.mobile-nav-close:hover { background: var(--paper-2); }
+
+.mobile-nav-links { flex: 1; display: flex; flex-direction: column; padding: 8px 0; overflow-y: auto; }
+.mobile-nav-links a {
+  font-size: 15px; font-weight: 400; color: var(--ink-2);
+  text-decoration: none; padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.15s, color 0.15s, padding-left 0.15s;
+}
+.mobile-nav-links a::after { content: '→'; font-size: 13px; color: var(--ink-3); transition: transform 0.2s; }
+.mobile-nav-links a:hover { background: var(--paper-2); color: var(--blue); padding-left: 30px; }
+.mobile-nav-links a:hover::after { transform: translateX(4px); color: var(--blue); }
+.mobile-nav-links a.cta-mob {
+  margin: 16px 24px 0; padding: 12px 20px;
+  background: var(--ink); color: #fff !important;
+  border-radius: 10px; border: none; font-weight: 500; justify-content: center;
+}
+.mobile-nav-links a.cta-mob::after { display: none; }
+.mobile-nav-links a.cta-mob:hover { background: var(--blue); padding-left: 20px; }
+
+/* ── HERO ────────────────────────────────────── */
+#inicio {
+  position: relative;
+  min-height: 80vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 5% 80px;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.hero-video { position: absolute; inset: 0; z-index: 0; }
+.hero-video video { width: 100%; height: 100%; object-fit: cover; }
+.hero-video-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.82); }
+
+.hero-grid-lines {
+  position: absolute; inset: 0; z-index: 1;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 680px; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 28px;
+  background: rgba(255,255,255,0.05);
+}
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.hero-content h1 {
+  font-family: var(--serif);
+  font-size: clamp(44px, 7vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.hero-content h1 em { font-style: italic; color: #6b9aff; }
+
+.hero-content p {
+  font-size: 17px; font-weight: 300; color: rgba(255,255,255,0.55);
+  line-height: 1.7; margin-bottom: 40px;
+}
+
+.hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+.btn-hero-primary {
+  padding: 14px 36px;
+  background: #fff; color: var(--ink);
+  border-radius: 100px;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-primary:hover { background: #e8e8e5; transform: translateY(-2px); }
+
+.btn-hero-outline {
+  padding: 14px 32px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.7);
+  border-radius: 100px;
+  font-size: 14px; font-weight: 400;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-hero-outline:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+/* ── FEATURES BAR ────────────────────────────── */
+.features-bar {
+  background: var(--ink);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 24px 5%;
+  display: flex; align-items: center; justify-content: center;
+  gap: 48px; flex-wrap: wrap;
+}
+.feat-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.5);
+}
+.feat-item i { color: #4ade80; font-size: 14px; }
+
+/* ── PRODUCTS ────────────────────────────────── */
+#productos { padding: 100px 5%; background: var(--paper); }
+
+.section-tag { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.section-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--blue); }
+.section-tag span { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue); }
+
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.0; letter-spacing: -0.02em; color: var(--ink);
+  margin-bottom: 12px;
+}
+.section-title em { font-style: italic; }
+.section-sub { font-size: 16px; font-weight: 300; color: var(--ink-2); line-height: 1.7; max-width: 480px; }
+
+.products-header {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 40px; align-items: end;
+  margin-bottom: 60px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* ── PRODUCT CARD ────────────────────────────── */
+.product-card {
+  background: #fff;
+  border: 1.5px solid rgba(13,13,13,0.1);
+  border-radius: calc(var(--r) + 4px);
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(13,13,13,0.05);
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  display: flex; flex-direction: column;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(13,13,13,0.1);
+  border-color: rgba(21,87,240,0.2);
+}
+
+.product-gallery {
+  position: relative;
+  background: var(--paper-2);
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+.gallery-track {
+  display: flex; height: 100%;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery-track img {
+  flex-shrink: 0; width: 100%; height: 100%;
+  object-fit: contain; scroll-snap-align: center; padding: 16px;
+}
+
+.gallery-dots {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 5px;
+}
+.gallery-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(13,13,13,0.2);
+  transition: background 0.2s, width 0.2s;
+  border: none; cursor: pointer; padding: 0;
+}
+.gallery-dot.active { background: var(--blue); width: 14px; border-radius: 3px; }
+
+.color-badge {
+  position: absolute; top: 12px; left: 12px;
+  padding: 4px 10px;
+  background: rgba(250,250,247,0.92);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-size: 11px; font-weight: 500; color: var(--ink-2);
+  backdrop-filter: blur(8px);
+}
+
+.product-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+
+.product-name { font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+.product-desc { font-size: 13px; font-weight: 300; color: var(--ink-2); line-height: 1.6; margin-bottom: 20px; }
+
+.color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.color-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.color-options { display: flex; gap: 8px; }
+.color-opt { position: relative; cursor: pointer; }
+.color-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.color-swatch {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: block; border: 2px solid transparent; outline: 2px solid transparent;
+  transition: outline 0.15s, border-color 0.15s;
+}
+.color-opt input:checked + .color-swatch { outline: 2px solid var(--blue); outline-offset: 2px; }
+.swatch-negro { background: #0d0d0d; border-color: rgba(13,13,13,0.2); }
+.swatch-blanco { background: #fff; border-color: rgba(13,13,13,0.2); }
+
+.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.qty-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.qty-controls { display: flex; align-items: center; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
+.qty-btn {
+  width: 34px; height: 34px;
+  background: none; border: none;
+  font-size: 16px; color: var(--ink-2);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.qty-btn:hover { background: var(--paper-2); color: var(--ink); }
+.qty-input {
+  width: 40px; text-align: center;
+  border: none; border-left: 1.5px solid var(--line); border-right: 1.5px solid var(--line);
+  font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--ink);
+  background: none; outline: none; padding: 0; height: 34px;
+}
+
+.product-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.product-price {
+  font-family: var(--serif); font-size: 28px;
+  color: var(--ink); letter-spacing: -0.02em;
+}
+
+.btn-add {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: var(--ink); color: #fff;
+  border: none; border-radius: 100px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-add:hover { background: var(--blue); transform: translateY(-1px); }
+.btn-add.added { background: #16a34a; }
+
+/* ── ABOUT NFC ───────────────────────────────── */
+#about-nfc { padding: 100px 5%; background: var(--paper-2); }
+
+.about-nfc-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: var(--r);
+  overflow: hidden; margin-top: 48px;
+}
+.about-nfc-cell {
+  background: var(--paper-2);
+  padding: 40px 32px;
+  transition: background 0.2s;
+}
+.about-nfc-cell:hover { background: #fff; }
+.nfc-cell-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--blue-pale);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--blue);
+  margin-bottom: 20px;
+}
+.about-nfc-cell h3 { font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+.about-nfc-cell p { font-size: 13px; font-weight: 300; color: var(--ink-2); line-height: 1.65; }
+
+/* ── CART SIDEBAR ────────────────────────────── */
+.cart-overlay {
+  display: none; position: fixed; inset: 0; z-index: 299;
+  background: rgba(13,13,13,0.45); backdrop-filter: blur(3px);
+}
+.cart-overlay.open { display: block; }
+
+.cart-sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 300;
+  width: 400px; max-width: 92vw;
+  background: var(--paper);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: -8px 0 48px rgba(13,13,13,0.15);
+}
+.cart-sidebar.open { transform: translateX(0); }
+
+.cart-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 64px;
+  border-bottom: 1px solid var(--line); flex-shrink: 0;
+}
+.cart-head h3 { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--ink); }
+.cart-close {
+  background: none; border: 1px solid var(--line); border-radius: 8px;
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: var(--ink-2); cursor: pointer;
+  transition: background 0.2s;
+}
+.cart-close:hover { background: var(--paper-2); }
+
+.cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+
+.cart-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; gap: 12px; color: var(--ink-3);
+}
+.cart-empty i { font-size: 40px; opacity: 0.3; }
+.cart-empty p { font-size: 14px; }
+
+.cart-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 0; border-bottom: 1px solid var(--line);
+}
+.cart-item-img {
+  width: 56px; height: 56px; border-radius: 10px;
+  background: var(--paper-2); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--ink-3); flex-shrink: 0;
+}
+.cart-item-info { flex: 1; }
+.cart-item-name { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+.cart-item-meta { font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+.cart-item-qty { display: flex; align-items: center; gap: 8px; }
+.cart-item-qty button {
+  width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid var(--line); background: none;
+  font-size: 14px; color: var(--ink-2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.cart-item-qty button:hover { background: var(--paper-2); }
+.cart-item-qty span { font-size: 13px; font-weight: 500; color: var(--ink); min-width: 20px; text-align: center; }
+.cart-item-price { font-size: 15px; font-weight: 600; color: var(--ink); flex-shrink: 0; }
+.cart-item-remove {
+  background: none; border: none; padding: 4px;
+  font-size: 13px; color: var(--ink-3); cursor: pointer;
+  transition: color 0.2s;
+}
+.cart-item-remove:hover { color: #ef4444; }
+
+.cart-foot {
+  padding: 20px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--paper); flex-shrink: 0;
+}
+.cart-total-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cart-total-label { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.cart-total-amount { font-family: var(--serif); font-size: 28px; color: var(--ink); letter-spacing: -0.02em; }
+
+.btn-checkout {
+  width: 100%; padding: 15px;
+  background: var(--ink); color: #fff;
+  border: none; border-radius: 100px;
+  font-family: var(--sans); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 10px; letter-spacing: 0.02em;
+}
+.btn-checkout:hover { background: var(--blue); }
+.btn-checkout:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-wa {
+  width: 100%; padding: 13px;
+  background: none; color: var(--ink-2);
+  border: 1.5px solid var(--line); border-radius: 100px;
+  font-family: var(--sans); font-size: 13px; font-weight: 400;
+  cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-wa:hover { border-color: #25d366; color: #25d366; }
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  background: var(--ink);
+  padding: 60px 5% 40px;
+  color: rgba(250,250,247,0.5);
+}
+.footer-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 40px; flex-wrap: wrap; margin-bottom: 32px;
+}
+.footer-logo .logo-tec { color: rgba(250,250,247,0.35); }
+.footer-logo .logo-onix { color: #fff; }
+.footer-tagline { font-size: 13px; font-weight: 300; color: rgba(250,250,247,0.4); margin-top: 8px; max-width: 200px; line-height: 1.6; }
+.footer-links { display: flex; gap: 60px; flex-wrap: wrap; }
+.footer-col h4 { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(250,250,247,0.35); margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 13px; font-weight: 300; color: rgba(250,250,247,0.55); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
+.footer-col a:hover { color: #fff; }
+.footer-bottom { display: flex; align-items: center; justify-content: space-between; font-size: 12px; flex-wrap: wrap; gap: 12px; }
+
+/* ── TOAST ───────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff;
+  padding: 12px 20px; border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  z-index: 999; opacity: 0; transition: opacity 0.3s, transform 0.3s;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast i { color: #4ade80; }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-btn { display: none; }
+  .menu-toggle { display: block; }
+  .products-header { grid-template-columns: 1fr; gap: 16px; }
+  .products-grid { grid-template-columns: 1fr 1fr; }
+  .about-nfc-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .products-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .product-body { padding: 16px; }
+  .product-name { font-size: 15px; }
+  .product-desc { display: none; }
+  .product-price { font-size: 22px; }
+  .about-nfc-grid { grid-template-columns: 1fr; }
+  .features-bar { gap: 24px; }
+  .footer-links { gap: 32px; }
+}
+@media (max-width: 420px) {
+  .products-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────── -->
+<nav>
+  <a href="#inicio" class="logo">
+    <span class="logo-tec">Tecnologías&nbsp;</span>
+    <span class="logo-onix">Onix</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#productos">Productos</a></li>
+    <li><a href="#about-nfc">Cómo funciona</a></li>
+    <li><a href="https://tecnologiasonix.vercel.app" target="_blank">Web principal</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" id="cartButton" aria-label="Carrito">
+      <i class="fas fa-shopping-bag"></i>
+      <span id="cartCount">0</span>
+    </button>
+    <a href="#productos" class="nav-btn">Ver tienda</a>
+    <button class="menu-toggle" onclick="openMenu()" aria-label="Menú"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- Mobile nav overlay -->
+<div class="nav-overlay" id="navOverlay" onclick="closeMenu()"></div>
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-header">
+    <a href="#inicio" class="mobile-nav-logo" onclick="closeMenu()">
+      <span class="tec">Tecnologías&nbsp;</span>
+      <span class="onix">Onix</span>
+    </a>
+    <button class="mobile-nav-close" onclick="closeMenu()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="mobile-nav-links">
+    <a href="#productos" onclick="closeMenu()">Productos</a>
+    <a href="#about-nfc" onclick="closeMenu()">Cómo funciona</a>
+    <a href="https://tecnologiasonix.vercel.app" target="_blank">Web principal</a>
+    <a href="#productos" class="cta-mob" onclick="closeMenu()">Ver tienda</a>
+  </div>
+</div>
+
+<!-- ── HERO ──────────────────────────────────── -->
+<section id="inicio">
+  <div class="hero-video">
+    <video autoplay muted loop playsinline>
+      <source src="https://github.com/Onixmanager/TecnologiasOnix/raw/refs/heads/main/videocabecera.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
+  </div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Tecnología NFC Premium</div>
+    <h1>Reseñas Google<br><em>sin fricción</em></h1>
+    <p>Productos NFC personalizados para tu negocio. Un toque y tus clientes dejan su reseña al instante. Sin apps, sin complicaciones.</p>
+    <div class="hero-actions">
+      <a href="#productos" class="btn-hero-primary"><i class="fas fa-cube"></i> Ver colección</a>
+      <a href="#about-nfc" class="btn-hero-outline">¿Cómo funciona?</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BAR -->
+<div class="features-bar">
+  <div class="feat-item"><i class="fas fa-check-circle"></i> Configuración incluida</div>
+  <div class="feat-item"><i class="fas fa-check-circle"></i> Envío rápido</div>
+  <div class="feat-item"><i class="fas fa-check-circle"></i> Compatible con todos los móviles</div>
+  <div class="feat-item"><i class="fas fa-check-circle"></i> Soporte técnico 1 año</div>
+</div>
+
+<!-- ── PRODUCTS ───────────────────────────────── -->
+<section id="productos">
+  <div class="products-header">
+    <div>
+      <div class="section-tag"><span>Colección NFC</span></div>
+      <h2 class="section-title">Nuestros <em>Modelos</em></h2>
+    </div>
+    <p class="section-sub">Tres modelos diseñados para cada tipo de negocio. Selecciona el color y la cantidad que necesitas.</p>
+  </div>
+
+  <div class="products-grid">
+
+    <!-- PRODUCTO 1 - NFC Logo -->
+    <div class="product-card">
+      <div class="product-gallery">
+        <div class="gallery-track" id="gallery-nfc-logo">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-LOGO-Black.png" alt="NFC Logo Negro">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-LOGO-White.png" alt="NFC Logo Blanco">
+        </div>
+        <div class="gallery-dots">
+          <button class="gallery-dot active" onclick="scrollGallery('gallery-nfc-logo',0,this)"></button>
+          <button class="gallery-dot" onclick="scrollGallery('gallery-nfc-logo',1,this)"></button>
+        </div>
+        <span class="color-badge" id="badge-nfc-logo">Negro</span>
+      </div>
+      <div class="product-body">
+        <h3 class="product-name">Modelo NFC Logo</h3>
+        <p class="product-desc">Personaliza con tu logo corporativo para una imagen de marca impecable.</p>
+        <div class="color-row">
+          <span class="color-label">Color</span>
+          <div class="color-options">
+            <label class="color-opt">
+              <input type="radio" name="color-nfc-logo" value="negro" checked onchange="changeColor('nfc-logo','negro',0)">
+              <span class="color-swatch swatch-negro"></span>
+            </label>
+            <label class="color-opt">
+              <input type="radio" name="color-nfc-logo" value="blanco" onchange="changeColor('nfc-logo','blanco',1)">
+              <span class="color-swatch swatch-blanco"></span>
+            </label>
+          </div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('qty-nfc-logo',-1)">−</button>
+            <input type="number" class="qty-input" id="qty-nfc-logo" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty('qty-nfc-logo',1)">+</button>
+          </div>
+        </div>
+        <div class="product-footer">
+          <span class="product-price">19.99€</span>
+          <button class="btn-add" onclick="addToCart('nfc-logo','Modelo NFC Logo',1999,'qty-nfc-logo','color-nfc-logo',this)">
+            <i class="fas fa-plus"></i> Añadir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTO 2 - Clean -->
+    <div class="product-card">
+      <div class="product-gallery">
+        <div class="gallery-track" id="gallery-clean">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-Clean-Black.png" alt="NFC Clean Negro">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-Clean-White.png" alt="NFC Clean Blanco">
+        </div>
+        <div class="gallery-dots">
+          <button class="gallery-dot active" onclick="scrollGallery('gallery-clean',0,this)"></button>
+          <button class="gallery-dot" onclick="scrollGallery('gallery-clean',1,this)"></button>
+        </div>
+        <span class="color-badge" id="badge-clean">Negro</span>
+      </div>
+      <div class="product-body">
+        <h3 class="product-name">Modelo Clean</h3>
+        <p class="product-desc">Diseño minimalista profesional, sin distracciones. La elegancia en su máxima expresión.</p>
+        <div class="color-row">
+          <span class="color-label">Color</span>
+          <div class="color-options">
+            <label class="color-opt">
+              <input type="radio" name="color-clean" value="negro" checked onchange="changeColor('clean','negro',0)">
+              <span class="color-swatch swatch-negro"></span>
+            </label>
+            <label class="color-opt">
+              <input type="radio" name="color-clean" value="blanco" onchange="changeColor('clean','blanco',1)">
+              <span class="color-swatch swatch-blanco"></span>
+            </label>
+          </div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('qty-clean',-1)">−</button>
+            <input type="number" class="qty-input" id="qty-clean" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty('qty-clean',1)">+</button>
+          </div>
+        </div>
+        <div class="product-footer">
+          <span class="product-price">19.99€</span>
+          <button class="btn-add" onclick="addToCart('clean','Modelo Clean',1999,'qty-clean','color-clean',this)">
+            <i class="fas fa-plus"></i> Añadir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTO 3 - NFC + QR -->
+    <div class="product-card">
+      <div class="product-gallery">
+        <div class="gallery-track" id="gallery-nfc-qr">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-QR-Black.png" alt="NFC QR Negro">
+          <img src="https://raw.githubusercontent.com/Onixmanager/TecnologiasOnix/refs/heads/main/Rese%C3%B1a-NFC-QR-White.png" alt="NFC QR Blanco">
+        </div>
+        <div class="gallery-dots">
+          <button class="gallery-dot active" onclick="scrollGallery('gallery-nfc-qr',0,this)"></button>
+          <button class="gallery-dot" onclick="scrollGallery('gallery-nfc-qr',1,this)"></button>
+        </div>
+        <span class="color-badge" id="badge-nfc-qr">Negro</span>
+      </div>
+      <div class="product-body">
+        <h3 class="product-name">Modelo NFC + QR</h3>
+        <p class="product-desc">Compatibilidad máxima. NFC para móviles modernos y QR para cualquier dispositivo.</p>
+        <div class="color-row">
+          <span class="color-label">Color</span>
+          <div class="color-options">
+            <label class="color-opt">
+              <input type="radio" name="color-nfc-qr" value="negro" checked onchange="changeColor('nfc-qr','negro',0)">
+              <span class="color-swatch swatch-negro"></span>
+            </label>
+            <label class="color-opt">
+              <input type="radio" name="color-nfc-qr" value="blanco" onchange="changeColor('nfc-qr','blanco',1)">
+              <span class="color-swatch swatch-blanco"></span>
+            </label>
+          </div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('qty-nfc-qr',-1)">−</button>
+            <input type="number" class="qty-input" id="qty-nfc-qr" value="1" min="1">
+            <button class="qty-btn" onclick="changeQty('qty-nfc-qr',1)">+</button>
+          </div>
+        </div>
+        <div class="product-footer">
+          <span class="product-price">19.99€</span>
+          <button class="btn-add" onclick="addToCart('nfc-qr','Modelo NFC + QR',1999,'qty-nfc-qr','color-nfc-qr',this)">
+            <i class="fas fa-plus"></i> Añadir
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── ABOUT NFC ──────────────────────────────── -->
+<section id="about-nfc">
+  <div class="section-tag"><span>Tecnología NFC</span></div>
+  <h2 class="section-title">¿Cómo <em>funciona?</em></h2>
+  <p class="section-sub">Tres pasos. Sin apps. Sin complicaciones. Más reseñas para tu negocio.</p>
+  <div class="about-nfc-grid">
+    <div class="about-nfc-cell">
+      <div class="nfc-cell-icon"><i class="fas fa-hand-pointer"></i></div>
+      <h3>1. El cliente acerca su móvil</h3>
+      <p>Solo necesita acercar el teléfono al dispositivo NFC. Compatible con todos los smartphones modernos, Android e iPhone.</p>
+    </div>
+    <div class="about-nfc-cell">
+      <div class="nfc-cell-icon"><i class="fas fa-external-link-alt"></i></div>
+      <h3>2. Se abre Google automáticamente</h3>
+      <p>En menos de un segundo el navegador redirige directamente a la página de reseñas de tu negocio en Google Maps.</p>
+    </div>
+    <div class="about-nfc-cell">
+      <div class="nfc-cell-icon"><i class="fas fa-star"></i></div>
+      <h3>3. Deja su reseña al instante</h3>
+      <p>El cliente valora con estrellas y escribe su experiencia. Sin fricciones, sin pasos extra. Tú recibes más reseñas positivas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────── -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <a href="#inicio" class="logo footer-logo">
+        <span class="logo-tec">Tecnologías&nbsp;</span>
+        <span class="logo-onix">Onix</span>
+      </a>
+      <p class="footer-tagline">Soluciones NFC para negocios que quieren crecer.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Tienda</h4>
+        <a href="#productos">Productos NFC</a>
+        <a href="#about-nfc">Cómo funciona</a>
+      </div>
+      <div class="footer-col">
+        <h4>Empresa</h4>
+        <a href="https://tecnologiasonix.vercel.app" target="_blank">Web principal</a>
+        <a href="https://wa.me/+34643229507" target="_blank">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Tecnologías Onix. Todos los derechos reservados.</span>
+    <span>Pagos seguros con <strong style="color:rgba(255,255,255,0.7)">Stripe</strong></span>
+  </div>
+</footer>
+
+<!-- ── CART SIDEBAR ───────────────────────────── -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-head">
+    <h3>Tu carrito</h3>
+    <button class="cart-close" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <i class="fas fa-shopping-bag"></i>
+      <p>Tu carrito está vacío</p>
+    </div>
+  </div>
+  <div class="cart-foot" id="cartFoot" style="display:none;">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cartTotal">0€</span>
+    </div>
+    <button class="btn-checkout" id="checkoutButton" onclick="checkout()">
+      <i class="fas fa-lock"></i> Pagar con Stripe
+    </button>
+    <button class="btn-wa" onclick="checkoutWhatsApp()">
+      <i class="fab fa-whatsapp"></i> Pedir por WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────── -->
+<div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Añadido al carrito</span></div>
+
+<script>
+// ── MENU ─────────────────────────────────────────
+function openMenu() {
+  document.getElementById('mobileNav').classList.add('open');
+  document.getElementById('navOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMenu() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── GALLERY ─────────────────────────────────────
+function scrollGallery(id, index, dotEl) {
+  const track = document.getElementById(id);
+  track.scrollTo({ left: index * track.offsetWidth, behavior: 'smooth' });
+  track.parentElement.querySelectorAll('.gallery-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === index);
+  });
+}
+
+function changeColor(product, color, imgIndex) {
+  scrollGallery('gallery-' + product, imgIndex,
+    document.querySelector('#gallery-' + product).parentElement.querySelectorAll('.gallery-dot')[imgIndex]);
+  const badge = document.getElementById('badge-' + product);
+  if (badge) badge.textContent = color.charAt(0).toUpperCase() + color.slice(1);
+}
+
+// ── QUANTITY ─────────────────────────────────────
+function changeQty(id, delta) {
+  const input = document.getElementById(id);
+  const val = parseInt(input.value) + delta;
+  if (val >= 1) input.value = val;
+}
+
+// ── CART STATE ───────────────────────────────────
+// price is stored in CENTS for Stripe compatibility
+let cart = [];
+
+function addToCart(id, name, priceInCents, qtyId, colorName, btn) {
+  const qty = parseInt(document.getElementById(qtyId).value) || 1;
+  const color = document.querySelector(`input[name="${colorName}"]:checked`)?.value || 'negro';
+  const key = id + '-' + color;
+
+  const existing = cart.find(i => i.key === key);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({ key, id, name, priceInCents, color, qty });
+  }
+
+  updateCartUI();
+  showToast(`${name} (${color}) añadido`);
+
+  btn.classList.add('added');
+  btn.innerHTML = '<i class="fas fa-check"></i> Añadido';
+  setTimeout(() => {
+    btn.classList.remove('added');
+    btn.innerHTML = '<i class="fas fa-plus"></i> Añadir';
+  }, 1800);
+}
+
+function removeFromCart(key) {
+  cart = cart.filter(i => i.key !== key);
+  updateCartUI();
+}
+
+function changeCartQty(key, delta) {
+  const item = cart.find(i => i.key === key);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.key !== key);
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const totalCents = cart.reduce((s, i) => s + i.priceInCents * i.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+
+  const countEl = document.getElementById('cartCount');
+  countEl.textContent = count;
+  countEl.classList.toggle('show', count > 0);
+
+  const itemsEl = document.getElementById('cartItems');
+  const footEl = document.getElementById('cartFoot');
+
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `<div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Tu carrito está vacío</p></div>`;
+    footEl.style.display = 'none';
+    return;
+  }
+
+  footEl.style.display = 'block';
+  document.getElementById('cartTotal').textContent = (totalCents / 100).toFixed(2) + '€';
+
+  itemsEl.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-img"><i class="fas fa-wifi"></i></div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-meta">Color: ${item.color.charAt(0).toUpperCase()+item.color.slice(1)}</div>
+        <div class="cart-item-qty">
+          <button onclick="changeCartQty('${item.key}',-1)">−</button>
+          <span>${item.qty}</span>
+          <button onclick="changeCartQty('${item.key}',1)">+</button>
+          <button class="cart-item-remove" onclick="removeFromCart('${item.key}')"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      </div>
+      <div class="cart-item-price">${((item.priceInCents * item.qty) / 100).toFixed(2)}€</div>
+    </div>
+  `).join('');
+}
+
+function toggleCart() {
+  const sidebar = document.getElementById('cartSidebar');
+  const overlay = document.getElementById('cartOverlay');
+  const isOpen = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+
+document.getElementById('cartButton').addEventListener('click', toggleCart);
+
+// ── CHECKOUT (Stripe) ─────────────────────────────
+async function checkout() {
+  if (cart.length === 0) return;
+
+  const btn = document.getElementById('checkoutButton');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando…';
+
+  // Build items payload — name + price in cents + quantity
+  const items = cart.map(i => ({
+    name: `${i.name} (${i.color.charAt(0).toUpperCase()+i.color.slice(1)})`,
+    price: i.priceInCents,
+    quantity: i.qty
+  }));
+
+  try {
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Sin URL de pago');
+    }
+  } catch (err) {
+    alert('Error al iniciar el pago. Por favor inténtalo de nuevo o contáctanos por WhatsApp.');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-lock"></i> Pagar con Stripe';
+  }
+}
+
+// ── WHATSAPP FALLBACK ─────────────────────────────
+function checkoutWhatsApp() {
+  if (cart.length === 0) return;
+  const total = cart.reduce((s, i) => s + i.priceInCents * i.qty, 0) / 100;
+  const lines = cart.map(i => `• ${i.name} (${i.color}) x${i.qty}`).join('%0A');
+  const msg = `Hola, quiero realizar un pedido:%0A%0A${lines}%0A%0ATotal: ${total.toFixed(2)}€`;
+  window.open(`https://wa.me/+34643229507?text=${msg}`, '_blank');
+}
+
+// ── TOAST ─────────────────────────────────────────
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ── SMOOTH SCROLL ─────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>
